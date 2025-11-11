@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Money Log</title>
+  <style>
+    body { 
+        font-family: "Poppins", sans-serif; 
+        background: url("hero.jpg") no-repeat center center fixed; 
+        background-size: cover; margin: 0; padding: 0; color: #333; 
+    }
+    .overlay { 
+        background: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.3)); min-height: 100vh; padding-bottom: 30px; 
+    }
+
+    .navbar { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        background-color: #154fa5; 
+        color: white; 
+        padding: 12px 40px; 
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+    }
+
+    .navbar .logo { 
+        font-size: 20px; 
+        font-weight: 700; 
+        display: flex; 
+        align-items: center; 
+        gap: 8px; 
+    }
+    .navbar .menu { 
+        display: flex; 
+        gap: 20px; 
+    }
+    
+    .navbar .menu a { 
+        text-decoration: none; 
+        color: white; 
+        font-weight: 500; 
+        padding: 8px 14px; 
+        border-radius: 6px; 
+        transition: background 0.2s; 
+    }
+    
+    .navbar .menu a:hover { 
+        background: rgba(255,255,255,0.2); 
+    }
+    
+    
+    
+    .container { 
+        width: 90%; 
+        max-width: 900px; 
+        background: white; 
+        margin: 30px auto; 
+        border-radius: 12px; 
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+        padding: 25px 30px; 
+    }
+
+    h2 { 
+    text-align: left; 
+    margin-top: 0; 
+    margin-bottom: 0;
+    }
+
+    .header-row {
+  display: flex;
+  justify-content: space-between; /* Mendorong H2 ke kiri dan Button ke kanan */
+  align-items: center; /* Menyejajarkan keduanya secara vertikal di tengah */
+  margin-bottom: 10px;
+}
+
+    
+    table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        margin-top: 15px; 
+    }
+    
+    th, td { 
+        text-align: left; 
+        padding: 10px; 
+        border-bottom: 1px solid #ddd; 
+    }
+    
+    th { 
+        background-color: #007bff; 
+        color: white; 
+    }
+    
+    .pemasukan { 
+        color: #28a745; 
+        font-weight: bold; 
+    }
+    
+    .pengeluaran { 
+        color: #dc3545; 
+        font-weight: bold; 
+    }
+    
+    .btn { 
+        background: #007bff; 
+        color: white; 
+        border: none; 
+        padding: 8px 12px; 
+        border-radius: 5px; 
+        cursor: pointer; 
+        font-weight: 600; 
+        margin-right: 5px; 
+    }
+    
+    .btn:hover { 
+        background: #0056b3; 
+    }
+    
+    .delete-btn { 
+        background: #dc3545; 
+    }
+    
+    .delete-btn:hover { 
+        background: #b02a37; 
+    }
+    
+    .link { 
+        text-align: center; 
+        margin-top: 20px; 
+    }
+    
+    .link a { 
+        color: #28a745; 
+        text-decoration: none; 
+        font-weight: 600; 
+    }
+    
+    .link a:hover { 
+        text-decoration: underline; 
+    }
+    .action-buttons { 
+        margin-bottom: 15px; 
+        text-align: right; 
+    }
+
+  </style>
+</head>
+<body>
+  <div class="overlay">
+
+    <!-- 🔹 NAVBAR -->
+    <nav class="navbar">
+      <div class="logo">💰MoneyLog.</div>
+      <div class="menu">
+        <a href="index.html">Home</a>
+        <a href="History.html">Histori</a>
+        <a href="#" id="exportPDF">Export</a>
+      </div>
+    </nav>
+
+    
+
+   <div class="container">
+
+    <div class="header-row">
+      <h2>Riwayat Transaksi Keuangan</h2>
+      <button class="btn delete-btn" id="hapusSemua">🗑 Hapus Semua</button>
+    </div>
+
+  <table>
+     <thead>
+      <tr>
+        <th>No</th>
+        <th>Keterangan</th>
+        <th>Jumlah</th>
+        <th>Tipe</th>
+        <th>Tanggal</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody id="tabelRiwayat"></tbody>
+  </table>
+
+  
+
+
+  <!-- jsPDF CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+  <script>
+    const tabel = document.getElementById("tabelRiwayat");
+    const hapusSemuaBtn = document.getElementById("hapusSemua");
+    const exportPDFBtn = document.getElementById("exportPDF");
+
+    let data = JSON.parse(localStorage.getItem("transaksi")) || [];
+
+    function renderTabel() {
+      tabel.innerHTML = "";
+      if (data.length === 0) {
+        tabel.innerHTML = `<tr><td colspan="6" style="text-align:center;">Belum ada data transaksi</td></tr>`;
+        return;
+      }
+
+      data.forEach((item, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${item.keterangan}</td>
+          <td>${item.jumlah.toLocaleString("id-ID")}</td>
+          <td class="${item.tipe}">${item.tipe.charAt(0).toUpperCase() + item.tipe.slice(1)}</td>
+          <td>${item.tanggal}</td>
+          <td>
+            <button class="btn delete-btn" onclick="hapusData(${index})">Hapus</button>
+          </td>
+        `;
+        tabel.appendChild(tr);
+      });
+    }
+
+    function hapusData(index) {
+      if (confirm("Yakin ingin menghapus data ini?")) {
+        data.splice(index, 1);
+        localStorage.setItem("transaksi", JSON.stringify(data));
+        renderTabel();
+      }
+    }
+
+    hapusSemuaBtn.addEventListener("click", () => {
+      if (confirm("⚠️ Yakin ingin menghapus semua data transaksi?")) {
+        localStorage.removeItem("transaksi");
+        data = [];
+        renderTabel();
+      }
+    });
+
+    exportPDFBtn.addEventListener("click", () => {
+      if (!data.length) return alert("Belum ada data untuk diexport!");
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(16);
+      doc.text("Riwayat Transaksi Keuangan", 105, 15, null, null, "center");
+
+      const headers = [["No", "Keterangan", "Jumlah (Rp)", "Tipe", "Tanggal"]];
+      const rows = data.map((item, index) => [
+        index + 1,
+        item.keterangan,
+        item.jumlah.toLocaleString("id-ID"),
+        item.tipe.charAt(0).toUpperCase() + item.tipe.slice(1),
+        item.tanggal
+      ]);
+
+      doc.autoTable({
+        head: headers,
+        body: rows,
+        startY: 25,
+        styles: { fontSize: 10 }
+      });
+
+      doc.save("riwayat_transaksi.pdf");
+    });
+
+    renderTabel();
+  </script>
+</body>
+</html>

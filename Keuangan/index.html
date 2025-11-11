@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Money Log</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: url("hero.jpg") no-repeat center center fixed;
+      background-size: cover;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    .overlay {
+      background-color: rgba(255, 255, 255, 0.4);
+      min-height: 100vh;
+      padding-bottom: 30px;
+    }
+
+    /* === NAVBAR === */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #154fa5;
+      color: white;
+      padding: 12px 40px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .navbar .logo {
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .navbar .menu {
+      display: flex;
+      gap: 20px;
+    }
+
+    .navbar .menu a {
+      text-decoration: none;
+      color: white;
+      font-weight: 500;
+      padding: 8px 14px;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+
+    .navbar .menu a:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .container {
+      width: 90%;
+      max-width: 700px;
+      background: white;
+      margin: 40px auto;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 25px 30px;
+    }
+
+    h2 { text-align: left; margin-top: 0; }
+
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 25px;
+    }
+
+    input, select {
+      flex: 1 1 200px;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+  button {
+     padding: 10px 20px;
+     background-color: #28a745;
+     color: white;
+     border: none;
+     border-radius: 6px;
+     font-weight: 600;
+     cursor: pointer;
+     transition: 0.2s;
+     width: auto; /* Ubah dari 100% menjadi auto */
+     text-align: center;
+     margin-top: 10px;
+     display: block; /* Agar margin auto berfungsi untuk pemusatan */
+     margin-left: auto; /* Pemusatan horizontal */
+     margin-right: auto; /* Pemusatan horizontal */
+}
+
+
+    button:hover { background-color: #218838; }
+
+    .link { text-align: center; margin-top: 20px; }
+
+    .link a {
+      color: #007bff;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .link a:hover { text-decoration: underline; }
+
+    /* === REKAPITULASI === */
+    .rekap {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      padding: 15px;
+      background: #f0f0f0;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+
+    .rekap div {
+      flex: 1;
+      text-align: center;
+    }
+
+    .rekap div span {
+      display: block;
+      font-size: 20px;
+      margin-top: 5px;
+      font-weight: 700;
+    }
+
+    .pemasukan { 
+        color: #28a745; 
+    }
+    
+    .pengeluaran { 
+        color: #dc3545; 
+    }
+    
+    .saldo { 
+        color: #007bff; 
+    }
+
+  </style>
+</head>
+<body>
+  <div class="overlay">
+
+    <!-- 🔹 NAVBAR -->
+    <nav class="navbar">
+      <div class="logo">💰MoneyLog.</div>
+      <div class="menu">
+        <a href="index.html">Home</a>
+        <a href="History.html">Histori</a>
+        <a href="#" id="exportPDF">Export</a>
+      </div>
+    </nav>
+
+    <!-- 🔹 FORM INPUT -->
+    <div class="container">
+      <h2>Input Transaksi Keuangan</h2>
+
+      <form id="budgetForm">
+        <input type="text" id="keterangan" placeholder="Keterangan" required />
+        <input type="number" id="jumlah" placeholder="Jumlah" required />
+        <select id="tipe">
+        <option value="pemasukan">Pemasukan</option>
+        <option value="pengeluaran">Pengeluaran</option>
+        </select>
+            <button type="submit" class="submit-button">Tambah</button> 
+    </form>
+
+      <!-- 🔹 REKAPITULASI -->
+      <div class="rekap">
+        <div>Pemasukan<span id="totalPemasukan">0</span></div>
+        <div>Pengeluaran<span id="totalPengeluaran">0</span></div>
+        <div>Saldo Akhir<span id="saldoAkhir">0</span></div>
+      </div>
+
+
+  <!-- jsPDF CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+  <script>
+    const form = document.getElementById("budgetForm");
+    const exportPDFBtn = document.getElementById("exportPDF");
+
+    const totalPemasukanEl = document.getElementById("totalPemasukan");
+    const totalPengeluaranEl = document.getElementById("totalPengeluaran");
+    const saldoAkhirEl = document.getElementById("saldoAkhir");
+
+    // Fungsi update rekap
+    function updateRekap() {
+      const data = JSON.parse(localStorage.getItem("transaksi")) || [];
+      const pemasukan = data.filter(d => d.tipe === "pemasukan").reduce((a,b)=>a+b.jumlah,0);
+      const pengeluaran = data.filter(d => d.tipe === "pengeluaran").reduce((a,b)=>a+b.jumlah,0);
+      const saldo = pemasukan - pengeluaran;
+
+      totalPemasukanEl.textContent = pemasukan.toLocaleString("id-ID");
+      totalPengeluaranEl.textContent = pengeluaran.toLocaleString("id-ID");
+      saldoAkhirEl.textContent = saldo.toLocaleString("id-ID");
+    }
+
+    // Tambah data
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const keterangan = document.getElementById("keterangan").value.trim();
+      const jumlah = parseFloat(document.getElementById("jumlah").value);
+      const tipe = document.getElementById("tipe").value;
+
+      if (!keterangan || isNaN(jumlah)) {
+        alert("Mohon isi keterangan dan jumlah dengan benar!");
+        return;
+      }
+
+      const transaksi = {
+        keterangan,
+        jumlah,
+        tipe,
+        tanggal: new Date().toLocaleString("id-ID"),
+      };
+
+      const dataLama = JSON.parse(localStorage.getItem("transaksi")) || [];
+      dataLama.push(transaksi);
+      localStorage.setItem("transaksi", JSON.stringify(dataLama));
+
+      alert("✅ Data berhasil ditambahkan!");
+      form.reset();
+      updateRekap(); // update rekap
+    });
+
+    // Export PDF
+    exportPDFBtn.addEventListener("click", () => {
+      const data = JSON.parse(localStorage.getItem("transaksi")) || [];
+      if (!data.length) return alert("Belum ada data untuk diexport!");
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(16);
+      doc.text("Riwayat Transaksi Keuangan", 105, 15, null, null, "center");
+
+      const headers = [["No", "Keterangan", "Jumlah (Rp)", "Tipe", "Tanggal"]];
+      const rows = data.map((item, index) => [
+        index + 1,
+        item.keterangan,
+        item.jumlah.toLocaleString("id-ID"),
+        item.tipe.charAt(0).toUpperCase() + item.tipe.slice(1),
+        item.tanggal
+      ]);
+
+      doc.autoTable({
+        head: headers,
+        body: rows,
+        startY: 25,
+        styles: { fontSize: 10 }
+      });
+
+      doc.save("riwayat_transaksi.pdf");
+    });
+
+    // Inisialisasi rekap saat pertama kali load
+    updateRekap();
+  </script>
+</body>
+</html>
