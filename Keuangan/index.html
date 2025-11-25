@@ -20,7 +20,7 @@
       padding-bottom: 30px;
     }
 
-    /* === NAVBAR === */
+   
     .navbar {
       display: flex;
       justify-content: space-between;
@@ -93,12 +93,12 @@
      font-weight: 600;
      cursor: pointer;
      transition: 0.2s;
-     width: auto; /* Ubah dari 100% menjadi auto */
+     width: auto; 
      text-align: center;
      margin-top: 10px;
-     display: block; /* Agar margin auto berfungsi untuk pemusatan */
-     margin-left: auto; /* Pemusatan horizontal */
-     margin-right: auto; /* Pemusatan horizontal */
+     display: block; 
+     margin-left: auto; 
+     margin-right: auto; 
 }
 
 
@@ -114,7 +114,7 @@
 
     .link a:hover { text-decoration: underline; }
 
-    /* === REKAPITULASI === */
+   
     .rekap {
       display: flex;
       justify-content: space-between;
@@ -154,7 +154,7 @@
 <body>
   <div class="overlay">
 
-    <!-- 🔹 NAVBAR -->
+    
     <nav class="navbar">
       <div class="logo">💰MoneyLog.</div>
       <div class="menu">
@@ -164,7 +164,7 @@
       </div>
     </nav>
 
-    <!-- 🔹 FORM INPUT -->
+   
     <div class="container">
       <h2>Input Transaksi Keuangan</h2>
 
@@ -178,7 +178,7 @@
             <button type="submit" class="submit-button">Tambah</button> 
     </form>
 
-      <!-- 🔹 REKAPITULASI -->
+  
       <div class="rekap">
         <div>Pemasukan<span id="totalPemasukan">0</span></div>
         <div>Pengeluaran<span id="totalPengeluaran">0</span></div>
@@ -186,7 +186,7 @@
       </div>
 
 
-  <!-- jsPDF CDN -->
+  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
@@ -198,7 +198,7 @@
     const totalPengeluaranEl = document.getElementById("totalPengeluaran");
     const saldoAkhirEl = document.getElementById("saldoAkhir");
 
-    // Fungsi update rekap
+    
     function updateRekap() {
       const data = JSON.parse(localStorage.getItem("transaksi")) || [];
       const pemasukan = data.filter(d => d.tipe === "pemasukan").reduce((a,b)=>a+b.jumlah,0);
@@ -210,7 +210,7 @@
       saldoAkhirEl.textContent = saldo.toLocaleString("id-ID");
     }
 
-    // Tambah data
+   
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const keterangan = document.getElementById("keterangan").value.trim();
@@ -235,10 +235,10 @@
 
       alert("✅ Data berhasil ditambahkan!");
       form.reset();
-      updateRekap(); // update rekap
+      updateRekap(); 
     });
 
-    // Export PDF
+    
     exportPDFBtn.addEventListener("click", () => {
       const data = JSON.parse(localStorage.getItem("transaksi")) || [];
       if (!data.length) return alert("Belum ada data untuk diexport!");
@@ -268,7 +268,7 @@
       doc.save("riwayat_transaksi.pdf");
     });
 
-    // Inisialisasi rekap saat pertama kali load
+    
     updateRekap();
   </script>
 </body>
