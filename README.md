@@ -16,6 +16,8 @@
    Link Figma :https://www.figma.com/design/DmesqSjeSxGujboHOW7ZPR/Front-End?node-id=0-1&t=ZqlDdhW4OkSQh46R-1
 
    <img width="1327" height="678" alt="Screenshot 2025-11-27 111422" src="https://github.com/user-attachments/assets/e9daea2f-7127-4679-a168-e3644c700750" />
+   <img width="1334" height="688" alt="Screenshot 2025-11-27 111409" src="https://github.com/user-attachments/assets/06b3b655-a3cc-4c6c-8510-3eee2020eb6b" />
+
 
 
                     
